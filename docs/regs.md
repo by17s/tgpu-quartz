@@ -31,7 +31,8 @@ Data registers are used to store operands and results of arithmetic and logical 
 | `rbf16a-rbf16h` | 16 | A register for storing 16-bit BFloat data (BF16). |
 | `rbf32a-rbf32h` | 32 | A register for storing 32-bit BFloat data (BF32). |
 
-### Vector RegistersThese registers are used for the simultaneous processing of multiple scalar values (SIMD/SIMT).
+### Vector Registers
+These registers are used for the simultaneous processing of multiple scalar values (SIMD/SIMT).
 
 | Name | Size (bits) | Elements | Description |
 | --- | --- | --- | --- |
@@ -41,6 +42,11 @@ Data registers are used to store operands and results of arithmetic and logical 
 | `rv4bf32a-rv4bf32d` | 128 | 4x BF32 | A vector register storing 4 elements of 32-bit BF data. |
 | `rv4i32a-rv4i32d` | 128 | 4x INT32 | A vector register storing 4 elements of 32-bit integer data. |
 
+### Matrix Registers
+These registers are designed for matrix operations, particularly useful in AI/ML workloads.
+| Name | Size (bits) | Elements | Description |
+| --- | --- | --- | --- |
+| `rm4s32a-j` | 512 | 4x4 Any | A matrix register storing a 4x4 matrix of 32-bit integer data. |
 ---
 
 ## Ray Tracing (RT Registers)
