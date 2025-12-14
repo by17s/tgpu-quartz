@@ -193,6 +193,25 @@ inline static void crt_err(const char* msg) {
     printf("[Err ] %s", msg);
 }
 
+// CompileArea
+
+typedef struct list_node_s {
+    void* data;
+    struct list_node_s* next;
+} list_node_t;
+
+typedef struct{
+    size_t len;
+    struct list_node_s* last;
+} list_t;
+
+
+list_t* list_new(void);
+list_node_t* list_new_node(void* value);
+void list_append(list_t *list, void* value);
+void* list_index(list_t* list, size_t index);
+void list_free(list_t* list);
+
 //Code Gen
 
 int gen_init(int flags);
