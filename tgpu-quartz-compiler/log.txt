@@ -1,0 +1,126 @@
+
+Parsing AST...
+First tokens to parse:
+  [0] TYPE: 'void'
+  [1] IDENTIFIER: 'main'
+  [2] LPAREN: '('
+  [3] TYPE: 'vec4'
+  [4] IDENTIFIER: 'f'
+  [5] RPAREN: ')'
+  [6] LBRACE: '{'
+  [7] TYPE: 'vec2'
+  [8] IDENTIFIER: 'uv'
+  [9] OPERATOR: '='
+
+
+=== ABSTRACT SYNTAX TREE ===
+Program:
+  FunctionDeclaration: void main (vec4 f)
+    BlockStatement:
+      VariableDeclaration: vec2 uv
+        Initializer:
+          BinaryExpression: /
+            Left:
+              MemberExpression: .xy
+                Object:
+                  Identifier: gl_FragCoord
+            Right:
+              ConstructorExpression: vec2
+                ConstructorExpression: float
+                  Identifier: uWidth
+                ConstructorExpression: float
+                  Identifier: uHeight
+      VariableDeclaration: vec2 p
+        Initializer:
+          BinaryExpression: *
+            Left:
+              Identifier: uv
+            Right:
+              Literal: 4.0
+      ExpressionStatement:
+        AssignmentExpression: =
+          Left:
+            MemberExpression: .x
+              Object:
+                Identifier: p
+          Right:
+            BinaryExpression: +
+              Left:
+                MemberExpression: .x
+                  Object:
+                    Identifier: p
+              Right:
+                BinaryExpression: *
+                  Left:
+                    Identifier: uTime
+                  Right:
+                    Literal: 0.1
+      VariableDeclaration: float n
+        Initializer:
+          CallExpression:
+            Callee:
+              Identifier: fbm
+            Arguments:
+              Identifier: p
+      VariableDeclaration: vec3 color1
+        Initializer:
+          ConstructorExpression: vec3
+            Literal: 0.1
+            Literal: 0.2
+            Literal: 0.5
+      VariableDeclaration: vec3 color2
+        Initializer:
+          ConstructorExpression: vec3
+            Literal: 0.9
+            Literal: 0.6
+            Literal: 0.3
+      VariableDeclaration: vec3 finalColor
+        Initializer:
+          CallExpression:
+            Callee:
+              Identifier: mix
+            Arguments:
+              Identifier: color1
+              Identifier: color2
+              Identifier: n
+      VariableDeclaration: float bands
+        Initializer:
+          BinaryExpression: +
+            Left:
+              BinaryExpression: *
+                Left:
+                  CallExpression:
+                    Callee:
+                      Identifier: sin
+                    Arguments:
+                      BinaryExpression: +
+                        Left:
+                          BinaryExpression: *
+                            Left:
+                              Identifier: n
+                            Right:
+                              Literal: 10.0
+                        Right:
+                          Identifier: uTime
+                Right:
+                  Literal: 0.5
+            Right:
+              Literal: 0.5
+      ExpressionStatement:
+        AssignmentExpression: =
+          Left:
+            Identifier: finalColor
+          Right:
+            BinaryExpression: *
+              Left:
+                Identifier: finalColor
+              Right:
+                Identifier: bands
+      ExpressionStatement:
+        AssignmentExpression: =
+          Left:
+            Identifier: gl_FragColor
+          Right:
+            ConstructorExpression: vec4
+              Identifier: finalColor
+              Literal: 1.0

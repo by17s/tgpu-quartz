@@ -1,0 +1,434 @@
+// ==============================================================
+// Example 1: GLSL Vertex Shader (save as vertex_shader.glsl)
+// ==============================================================
+
+// Attributes from vertex buffer
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+attribute vec2 aTexCoord;
+
+// Uniforms (constants for all vertices)
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform mat3 uNormalMatrix;
+
+// Varying (output to fragment shader)
+varying vec3 vNormal;
+varying vec2 vTexCoord;
+varying vec3 vWorldPosition;
+
+void main() {
+    // Transform position to world space
+    vec4 worldPos = uModelMatrix * vec4(aPosition, 1.0);
+    vWorldPosition = worldPos.xyz;
+    
+    // Transform normal to world space
+    vNormal = normalize(uNormalMatrix * aNormal);
+    
+    // Pass texture coordinates
+    vTexCoord = aTexCoord;
+    
+    // Calculate final position
+    gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
+}
+
+// ==============================================================
+// Example 2: GLSL Fragment Shader (save as fragment_shader.glsl)
+// ==============================================================
+
+precision mediump float;
+
+// Input from vertex shader
+varying vec3 vNormal;
+varying vec2 vTexCoord;
+varying vec3 vWorldPosition;
+
+// Uniforms
+uniform sampler2D uTexture;
+uniform vec3 uLightPosition;
+uniform vec3 uLightColor;
+uniform vec3 uAmbientColor;
+uniform vec3 uCameraPosition;
+
+void main() {
+    // Sample texture
+    vec4 texColor = texture2D(uTexture, vTexCoord);
+    
+    // Calculate lighting direction
+    vec3 lightDir = normalize(uLightPosition - vWorldPosition);
+    vec3 normal = normalize(vNormal);
+    
+    // Diffuse lighting
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * uLightColor;
+    
+    // Specular lighting
+    vec3 viewDir = normalize(uCameraPosition - vWorldPosition);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = spec * uLightColor;
+    
+    // Combine lighting
+    vec3 result = (uAmbientColor + diffuse + specular) * texColor.rgb;
+    
+    gl_FragColor = vec4(result, texColor.a);
+}
+
+// ==============================================================
+// Example 3: C-like Program (save as program.c)
+// ==============================================================
+
+// Simple ray tracer structures and functions
+
+struct Vec3 {
+    float x;
+    float y;
+    float z;
+};
+
+struct Ray {
+    vec3 origin;
+    vec3 direction;
+};
+
+struct Sphere {
+    vec3 center;
+    float radius;
+    vec3 color;
+};
+
+// Vector operations
+vec3 vec3_add(vec3 a, vec3 b) {
+    vec3 result;
+    result.x = a.x + b.x;
+    result.y = a.y + b.y;
+    result.z = a.z + b.z;
+    return result;
+}
+
+vec3 vec3_sub(vec3 a, vec3 b) {
+    vec3 result;
+    result.x = a.x - b.x;
+    result.y = a.y - b.y;
+    result.z = a.z - b.z;
+    return result;
+}
+
+vec3 vec3_scale(vec3 v, float s) {
+    vec3 result;
+    result.x = v.x * s;
+    result.y = v.y * s;
+    result.z = v.z * s;
+    return result;
+}
+
+float vec3_dot(vec3 a, vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+float vec3_length(vec3 v) {
+    return sqrt(vec3_dot(v, v));
+}
+
+vec3 vec3_normalize(vec3 v) {
+    float len = vec3_length(v);
+    return vec3_scale(v, 1.0 / len);
+}
+
+// Ray-sphere intersection
+bool intersect_sphere(Ray ray, Sphere sphere, float t) {
+    vec3 oc = vec3_sub(ray.origin, sphere.center);
+    
+    float a = vec3_dot(ray.direction, ray.direction);
+    float b = 2.0 * vec3_dot(oc, ray.direction);
+    float c = vec3_dot(oc, oc) - sphere.radius * sphere.radius;
+    
+    float discriminant = b * b - 4.0 * a * c;
+    
+    if (discriminant < 0.0) {
+        return false;
+    }
+    
+    float sqrtd = sqrt(discriminant);
+    float t0 = (-b - sqrtd) / (2.0 * a);
+    float t1 = (-b + sqrtd) / (2.0 * a);
+    
+    if (t0 > 0.0) {
+        t = t0;
+        return true;
+    }
+    
+    if (t1 > 0.0) {
+        t = t1;
+        return true;
+    }
+    
+    return false;
+}
+
+// Trace a ray through the scene
+vec3 trace_ray(Ray ray, Sphere spheres, int sphere_count) {
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    float closest_t = 1000000.0;
+    int hit_index = -1;
+    
+    // Find closest intersection
+    for (int i = 0; i < sphere_count; i = i + 1) {
+        float t = 0.0;
+        if (intersect_sphere(ray, spheres[i], t)) {
+            if (t < closest_t) {
+                closest_t = t;
+                hit_index = i;
+            }
+        }
+    }
+    
+    // If we hit something
+    if (hit_index >= 0) {
+        vec3 hit_point = vec3_add(ray.origin, vec3_scale(ray.direction, closest_t));
+        vec3 normal = vec3_normalize(vec3_sub(hit_point, spheres[hit_index].center));
+        
+        // Simple diffuse shading
+        vec3 light_dir = vec3_normalize(vec3(1.0, 1.0, 1.0));
+        float intensity = max(vec3_dot(normal, light_dir), 0.0);
+        
+        color = vec3_scale(spheres[hit_index].color, intensity);
+    }
+    
+    return color;
+}
+
+// Main rendering function
+void render(int width, int height) {
+    // Create scene
+    Sphere spheres[3];
+    
+    spheres[0].center = vec3(0.0, 0.0, -5.0);
+    spheres[0].radius = 1.0;
+    spheres[0].color = vec3(1.0, 0.0, 0.0);
+    
+    spheres[1].center = vec3(2.0, 0.0, -5.0);
+    spheres[1].radius = 0.5;
+    spheres[1].color = vec3(0.0, 1.0, 0.0);
+    
+    spheres[2].center = vec3(-2.0, 0.0, -5.0);
+    spheres[2].radius = 0.75;
+    spheres[2].color = vec3(0.0, 0.0, 1.0);
+    
+    // Render each pixel
+    for (int y = 0; y < height; y = y + 1) {
+        for (int x = 0; x < width; x = x + 1) {
+            // Calculate ray direction
+            float u = (float(x) / float(width)) * 2.0 - 1.0;
+            float v = (float(y) / float(height)) * 2.0 - 1.0;
+            
+            Ray ray;
+            ray.origin = vec3(0.0, 0.0, 0.0);
+            ray.direction = vec3_normalize(vec3(u, v, -1.0));
+            
+            // Trace ray
+            vec3 color = trace_ray(ray, spheres, 3);
+            
+            // Output color (pseudocode)
+            set_pixel(x, y, color);
+        }
+    }
+}
+
+// ==============================================================
+// Example 4: Game-like Logic (save as game.c)
+// ==============================================================
+
+const int MAX_ENTITIES = 100;
+const float GRAVITY = -9.8;
+
+struct Entity {
+    vec3 position;
+    vec3 velocity;
+    float mass;
+    bool is_active;
+};
+
+struct World {
+    Entity entities[MAX_ENTITIES];
+    int entity_count;
+    float time;
+};
+
+// Initialize world
+void init_world(World world) {
+    world.entity_count = 0;
+    world.time = 0.0;
+    
+    for (int i = 0; i < MAX_ENTITIES; i = i + 1) {
+        world.entities[i].is_active = false;
+    }
+}
+
+// Add entity to world
+int add_entity(World world, vec3 pos, vec3 vel, float mass) {
+    if (world.entity_count >= MAX_ENTITIES) {
+        return -1;
+    }
+    
+    int index = world.entity_count;
+    world.entity_count = world.entity_count + 1;
+    
+    world.entities[index].position = pos;
+    world.entities[index].velocity = vel;
+    world.entities[index].mass = mass;
+    world.entities[index].is_active = true;
+    
+    return index;
+}
+
+// Apply physics
+void apply_physics(Entity entity, float dt) {
+    // Apply gravity
+    entity.velocity.y = entity.velocity.y + GRAVITY * dt;
+    
+    // Update position
+    entity.position.x = entity.position.x + entity.velocity.x * dt;
+    entity.position.y = entity.position.y + entity.velocity.y * dt;
+    entity.position.z = entity.position.z + entity.velocity.z * dt;
+    
+    // Ground collision
+    if (entity.position.y < 0.0) {
+        entity.position.y = 0.0;
+        entity.velocity.y = -entity.velocity.y * 0.8;
+    }
+}
+
+// Update world simulation
+void update_world(World world, float dt) {
+    world.time = world.time + dt;
+    
+    for (int i = 0; i < world.entity_count; i = i + 1) {
+        if (world.entities[i].is_active) {
+            apply_physics(world.entities[i], dt);
+        }
+    }
+}
+
+// Check collision between two entities
+bool check_collision(Entity a, Entity b, float radius) {
+    vec3 diff = vec3_sub(a.position, b.position);
+    float dist = vec3_length(diff);
+    return dist < radius * 2.0;
+}
+
+// Handle collisions
+void handle_collisions(World world, float radius) {
+    for (int i = 0; i < world.entity_count; i = i + 1) {
+        if (!world.entities[i].is_active) {
+            continue;
+        }
+        
+        for (int j = i + 1; j < world.entity_count; j = j + 1) {
+            if (!world.entities[j].is_active) {
+                continue;
+            }
+            
+            if (check_collision(world.entities[i], world.entities[j], radius)) {
+                // Simple elastic collision
+                vec3 temp = world.entities[i].velocity;
+                world.entities[i].velocity = world.entities[j].velocity;
+                world.entities[j].velocity = temp;
+            }
+        }
+    }
+}
+
+// Main game loop
+void game_loop() {
+    World world;
+    init_world(world);
+    
+    // Spawn some entities
+    for (int i = 0; i < 10; i = i + 1) {
+        vec3 pos = vec3(float(i) * 2.0, 10.0, 0.0);
+        vec3 vel = vec3(0.0, 0.0, 0.0);
+        add_entity(world, pos, vel, 1.0);
+    }
+    
+    // Simulation loop
+    float dt = 0.016; // 60 FPS
+    
+    while (world.time < 10.0) {
+        update_world(world, dt);
+        handle_collisions(world, 0.5);
+        
+        // Render (pseudocode)
+        render_world(world);
+    }
+}
+
+// ==============================================================
+// Example 5: Compute Shader Style (save as compute.glsl)
+// ==============================================================
+
+uniform int uWidth;
+uniform int uHeight;
+uniform float uTime;
+
+const float PI = 3.14159265359;
+
+// Procedural noise function
+float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+// Smooth noise
+float smooth_noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    
+    float a = noise(i);
+    float b = noise(i + vec2(1.0, 0.0));
+    float c = noise(i + vec2(0.0, 1.0));
+    float d = noise(i + vec2(1.0, 1.0));
+    
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+// Fractal Brownian Motion
+float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 2.0;
+    
+    for (int i = 0; i < 6; i = i + 1) {
+        value = value + amplitude * smooth_noise(p * frequency);
+        amplitude = amplitude * 0.5;
+        frequency = frequency * 2.0;
+    }
+    
+    return value;
+}
+
+// Main compute function
+void main() {
+    // Get current pixel coordinates
+    vec2 uv = gl_FragCoord.xy / vec2(float(uWidth), float(uHeight));
+    
+    // Animate
+    vec2 p = uv * 4.0;
+    p.x = p.x + uTime * 0.1;
+    
+    // Generate procedural texture
+    float n = fbm(p);
+    
+    // Color based on noise
+    vec3 color1 = vec3(0.1, 0.2, 0.5);
+    vec3 color2 = vec3(0.9, 0.6, 0.3);
+    vec3 finalColor = mix(color1, color2, n);
+    
+    // Add some variation
+    float bands = sin(n * 10.0 + uTime) * 0.5 + 0.5;
+    finalColor = finalColor * bands;
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}

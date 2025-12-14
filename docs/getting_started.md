@@ -53,11 +53,14 @@ Once installed, you can run a simple program using the simulator:
 
     int main() {
        // Example program
-       debug_init(DBG_SERIAL, UART0, 115200);
+       debug_log_init(DBG_SERIAL, UART0, 115200);
        debug_log("Hello, TGPU-quartz!");
+
        return 0;
     }
    ```
+   if you use simulator, UART0 will print to console.
+   if you use real hardware, make sure to connect to UART0 (pins U0_RX, U0_TX) with the correct baud rate.
 
 2. Compile the program:
    ```bash
