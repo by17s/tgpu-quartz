@@ -16,7 +16,7 @@ To install the TGPU-quartz simulator:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/tgpu-quartz.git
+   git clone https://github.com/by17s/tgpu-quartz/tgpu-quartz.git
    ```
 
 2. Navigate to the project directory:
