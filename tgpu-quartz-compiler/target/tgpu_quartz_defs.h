@@ -23,7 +23,41 @@ enum {
 };
 
 enum {
-    TGQ_I_NOP = 0x00
+    TGQ_I_NOP = 0x00,
+    TGQ_I_ADD,
+    TGQ_I_SUB,
+    TGQ_I_MUL,
+    TGQ_I_DIV,
+    TGQ_I_FML,
+    TGQ_I_SQRT,
+    TGQ_I_MIN,
+    TGQ_I_MAX,
+    TGQ_I_AND,
+    TGQ_I_OR,
+    TGQ_I_XOR,
+    TGQ_I_NOT,
+    TGQ_I_SHL,
+    TGQ_I_SHR,
+    TGQ_I_MOV,
+    TGQ_I_XCHG,
+    TGQ_I_BRA,
+    TGQ_I_BEQ,
+    TGQ_I_BNE,
+    TGQ_I_BLT,
+    TGQ_I_BGT,
+    TGQ_I_CALL,
+    TGQ_I_LD_GLOBAL,
+    TGQ_I_ST_GLOBAL,
+    TGQ_I_LD_LOCAL,
+    TGQ_I_ST_LOCAL,
+    TGQ_I_LCONST8,
+    TGQ_I_LCONST16,
+    TGQ_I_LCONST32,
+    TGQ_I_LCONST64
+
+    TGQ_I_RET = 0x1000_0000,
+    TGQ_I_SYNC,
+
 }
 
 #define TGQ_R_GEN8(T, R) ((((uint8_t)T & 0xF) << 4) | ((uint8_t)R & 0xF))
