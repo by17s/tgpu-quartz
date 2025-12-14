@@ -37,6 +37,7 @@ Data registers are used to store operands and results of arithmetic and logical 
 | --- | --- | --- | --- |
 | `rv4fp16a-rv4fp16d` | 64 | 4x FP16 | A vector register storing 4 elements of 16-bit FP data. |
 | `rv4fp32a-rv4fp32d` | 128 | 4x FP32 | A vector register storing 4 elements of 32-bit FP data. |
+| `rv4bf16a-rv4bf16d` | 128 | 4x BF16 | A vector register storing 4 elements of 16-bit BF data. |
 | `rv4bf32a-rv4bf32d` | 128 | 4x BF32 | A vector register storing 4 elements of 32-bit BF data. |
 | `rv4i32a-rv4i32d` | 128 | 4x INT32 | A vector register storing 4 elements of 32-bit integer data. |
 
