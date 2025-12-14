@@ -168,7 +168,7 @@ inst rd, r1, r2, r3, r4
 # Matrix Instructions
 
 > [!IMPORTANT] 
-> Matrix registers have no fixed type. The type of the matrix depends on the instruction used.  
+> Matrix registers do not have a fixed type. The type of the matrix depends on the instruction used.  
 > Syntax: `wmma.T rdm, rm1, rm2, rm3` where `T` can be: `i32`, `fp32`, `fp16`, `bf32`, `bf16`.
 
 | Instruction | Syntax | Description |
