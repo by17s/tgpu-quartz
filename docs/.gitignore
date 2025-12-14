@@ -1,0 +1,8 @@
+*.ldesc
+*.hex
+*.ihex
+*.elf
+*.out
+*.bin
+*.iso
+*.fs
