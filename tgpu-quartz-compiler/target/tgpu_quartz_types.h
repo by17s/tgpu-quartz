@@ -125,7 +125,7 @@ typedef struct {
 void types_init(void);
 void types_cleanup(void);
 
-// Get type info from GLSL type name
+// Get type info from TGQL type name
 TypeInfo *type_from_name(const char *name);
 
 // Create array type
@@ -163,6 +163,8 @@ uint8_t type_to_tgq(TypeInfo *t);
 
 // Get register class for a type
 RegisterClass type_register_class(TypeInfo *t);
+
+uint16_t float32_to_fp16(float f);
 
 // Predefined types (initialized in types_init)
 extern TypeInfo *TYPE_VOID_INFO;

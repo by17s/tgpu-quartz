@@ -11,6 +11,7 @@ TypeInfo *TYPE_VOID_INFO = NULL;
 TypeInfo *TYPE_BOOL_INFO = NULL;
 TypeInfo *TYPE_INT_INFO = NULL;
 TypeInfo *TYPE_FLOAT_INFO = NULL;
+TypeInfo *TYPE_FP16_INFO = NULL;
 TypeInfo *TYPE_VEC2_INFO = NULL;
 TypeInfo *TYPE_VEC3_INFO = NULL;
 TypeInfo *TYPE_VEC4_INFO = NULL;
@@ -42,21 +43,23 @@ static TypeMapping type_mappings[] = {
     {"float",      TYPE_FLOAT,  TGQ_FP32,    4,  1, REGCLASS_SCALAR_FP32},
     {"double",     TYPE_DOUBLE, TGQ_I64,     8,  1, REGCLASS_SCALAR_I64},
     {"char",       TYPE_CHAR,   TGQ_I8,      1,  1, REGCLASS_SCALAR_I8},
+    {"fp16",       TYPE_FLOAT,  TGQ_FP16,    2,  1, REGCLASS_SCALAR_FP16},
+    {"bf16",       TYPE_FLOAT,  TGQ_BF16,    2,  1, REGCLASS_SCALAR_BF16},
 
     // Float vectors
-    {"vec2",       TYPE_VEC2,   TGQ_FP32,    8,  2, REGCLASS_SCALAR_FP32},
-    {"vec3",       TYPE_VEC3,   TGQ_FP32,   12,  3, REGCLASS_SCALAR_FP32},
-    {"vec4",       TYPE_VEC4,   TGQ_V4FP32, 16,  4, REGCLASS_VECTOR},
+    {"vec2",       TYPE_VEC2,   TGQ_V4FP32,   16,  2, REGCLASS_VECTOR},
+    {"vec3",       TYPE_VEC3,   TGQ_V4FP32,   16,  3, REGCLASS_VECTOR},
+    {"vec4",       TYPE_VEC4,   TGQ_V4FP32,   16,  4, REGCLASS_VECTOR},
 
     // Int vectors
-    {"ivec2",      TYPE_IVEC2,  TGQ_I32,     8,  2, REGCLASS_SCALAR_I32},
-    {"ivec3",      TYPE_IVEC3,  TGQ_I32,    12,  3, REGCLASS_SCALAR_I32},
-    {"ivec4",      TYPE_IVEC4,  TGQ_V4I32,  16,  4, REGCLASS_VECTOR},
+    {"ivec2",      TYPE_IVEC2,  TGQ_V4I32,       16,  2, REGCLASS_VECTOR},
+    {"ivec3",      TYPE_IVEC3,  TGQ_V4I32,       16,  3, REGCLASS_VECTOR},
+    {"ivec4",      TYPE_IVEC4,  TGQ_V4I32,       16,  4, REGCLASS_VECTOR},
 
     // Bool vectors
-    {"bvec2",      TYPE_BVEC2,  TGQ_I32,     8,  2, REGCLASS_SCALAR_I32},
-    {"bvec3",      TYPE_BVEC3,  TGQ_I32,    12,  3, REGCLASS_SCALAR_I32},
-    {"bvec4",      TYPE_BVEC4,  TGQ_V4I32,  16,  4, REGCLASS_VECTOR},
+    {"bvec2",      TYPE_BVEC2,  TGQ_V4I32,    16,  2, REGCLASS_VECTOR},
+    {"bvec3",      TYPE_BVEC3,  TGQ_V4I32,    16,  3, REGCLASS_VECTOR},
+    {"bvec4",      TYPE_BVEC4,  TGQ_V4I32,    16,  4, REGCLASS_VECTOR},
 
     // Matrices
     {"mat2",       TYPE_MAT2,   TGQ_FP32,   16,  4, REGCLASS_MATRIX},
@@ -103,11 +106,12 @@ void types_init(void) {
     TYPE_BOOL_INFO  = type_create_basic(TYPE_BOOL,  TGQ_I8,    1,  1, REGCLASS_SCALAR_I8);
     TYPE_INT_INFO   = type_create_basic(TYPE_INT,   TGQ_I32,   4,  1, REGCLASS_SCALAR_I32);
     TYPE_FLOAT_INFO = type_create_basic(TYPE_FLOAT, TGQ_FP32,  4,  1, REGCLASS_SCALAR_FP32);
-    TYPE_VEC2_INFO  = type_create_basic(TYPE_VEC2,  TGQ_FP32,  8,  2, REGCLASS_SCALAR_FP32);
-    TYPE_VEC3_INFO  = type_create_basic(TYPE_VEC3,  TGQ_FP32, 12,  3, REGCLASS_SCALAR_FP32);
+    TYPE_FP16_INFO = type_create_basic(TYPE_FLOAT, TGQ_FP16,  2,  1, REGCLASS_SCALAR_FP16);
+    TYPE_VEC2_INFO  = type_create_basic(TYPE_VEC2,  TGQ_V4FP32,  16,  2, REGCLASS_VECTOR);
+    TYPE_VEC3_INFO  = type_create_basic(TYPE_VEC3,  TGQ_V4FP32, 16,  3, REGCLASS_VECTOR);
     TYPE_VEC4_INFO  = type_create_basic(TYPE_VEC4,  TGQ_V4FP32, 16, 4, REGCLASS_VECTOR);
-    TYPE_IVEC2_INFO = type_create_basic(TYPE_IVEC2, TGQ_I32,   8,  2, REGCLASS_SCALAR_I32);
-    TYPE_IVEC3_INFO = type_create_basic(TYPE_IVEC3, TGQ_I32,  12,  3, REGCLASS_SCALAR_I32);
+    TYPE_IVEC2_INFO = type_create_basic(TYPE_IVEC2, TGQ_V4I32,   16,  2, REGCLASS_VECTOR);
+    TYPE_IVEC3_INFO = type_create_basic(TYPE_IVEC3, TGQ_V4I32,  16,  3, REGCLASS_VECTOR);
     TYPE_IVEC4_INFO = type_create_basic(TYPE_IVEC4, TGQ_V4I32, 16, 4, REGCLASS_VECTOR);
     TYPE_MAT2_INFO  = type_create_basic(TYPE_MAT2,  TGQ_FP32, 16,  4, REGCLASS_MATRIX);
     TYPE_MAT3_INFO  = type_create_basic(TYPE_MAT3,  TGQ_FP32, 36,  9, REGCLASS_MATRIX);
@@ -479,4 +483,19 @@ uint8_t type_to_tgq(TypeInfo *t) {
 RegisterClass type_register_class(TypeInfo *t) {
     if (!t) return REGCLASS_NONE;
     return t->reg_class;
+}
+
+uint16_t float32_to_fp16(float f) {
+    uint32_t x = *(uint32_t*)&f;
+    uint32_t sign = (x >> 16) & 0x8000;
+    uint32_t exponent = ((x >> 23) & 0xFF) - 127 + 15;
+    uint32_t mantissa = (x >> 13) & 0x3FF;
+
+    if (exponent <= 0) {
+        return sign;
+    } else if (exponent >= 31) {
+        return sign | 0x7C00;
+    } else {
+        return sign | (exponent << 10) | mantissa;
+    }
 }

@@ -6,20 +6,12 @@
 #ifdef TARGET_TGPU_QUARTZ
 # include "target/tgpu_quartz_gen.c"
 # include "target/tgpu_quartz_defs.h"
+# include "target/tgpu_quartz_emit.c"
+# include "target/tgpu_quartz_types.c"
+# include "target/tgpu_quartz_symtab.c"
 #else
-#error [Err] Invalid target
+#error [Err] Invalid target;
 #endif
-
-typedef struct config_s
-{
-    int flags;
-    
-    TARGET_ADDR_T text_base;
-    TARGET_ADDR_T data_base;
-    TARGET_ADDR_T const_base;
-    
-} config_t;
-
 
 list_t* list_new(void) {
     list_t* new_list = (list_t*)malloc(sizeof(list_t));

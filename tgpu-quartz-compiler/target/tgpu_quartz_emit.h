@@ -141,6 +141,10 @@ void emit_call(EmitBuffer *buf, LabelManager *lm, int label_id);
 void emit_ret(EmitBuffer *buf);
 void emit_sync(EmitBuffer *buf);
 
+// Atomic
+void emit_atomic_add(EmitBuffer *buf, uint8_t type, uint8_t rd, uint8_t rbase, uint8_t roff);
+void emit_atomic_sub(EmitBuffer *buf, uint8_t type, uint8_t rd, uint8_t rbase, uint8_t roff);
+
 // ============================================================================
 // OUTPUT
 // ============================================================================

@@ -1525,6 +1525,7 @@ int main(int argc, char **argv) {
     ast = parse_program(parser);
 
     gen_init(0);
+    gen_by_ast(ast);
     
     // Try to parse, catch errors
     if (show_ast) {

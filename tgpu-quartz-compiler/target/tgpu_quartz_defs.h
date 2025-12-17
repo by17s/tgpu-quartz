@@ -20,7 +20,19 @@ enum {
     TGQ_V4FP32,
     TGQ_V4BF16,
     TGQ_V4BF32,
+
+    TGQ_MATRIX,
+    TGQ_CTRL,
+    TGQ_CTRL_GLOBAL,
+
+    TGQ_TYPE_TOP
 };
+
+#define TGQ_SCALAR_REGISTER_COUNT 8
+#define TGQ_VECTOR_REGISTER_COUNT 8
+#define TGQ_UNIFIED_MATRIX_REGISTER_COUNT 10
+
+#define GET_REG_COUNT_BY_TYPE(REG) ((REG < TGQ_V4I32) ? TGQ_SCALAR_REGISTER_COUNT : TGQ_VECTOR_REGISTER_COUNT)
 
 enum {
     TGQ_I_NOP = 0x00,
@@ -53,14 +65,21 @@ enum {
     TGQ_I_LCONST8,
     TGQ_I_LCONST16,
     TGQ_I_LCONST32,
-    TGQ_I_LCONST64
+    TGQ_I_LCONST64,
+    TGQ_I_LCONST32_CTRL,
+    TGQ_I_LCONST64_CTRL,
 
-    TGQ_I_RET = 0x1000_0000,
+    TGQ_I_ATOMIC_ADD,
+    TGQ_I_ATOMIC_SUB,
+    TGQ_I_ATOMIC_ST,
+
+    TGQ_I_RET = 0b10000000,
     TGQ_I_SYNC,
 
-}
+};
 
 #define TGQ_R_GEN8(T, R) ((((uint8_t)T & 0xF) << 4) | ((uint8_t)R & 0xF))
+#define TGQ_R_GEN8_R(IS_GLOBAL, R) ((((uint8_t)IS_GLOBAL & 0x1) << 7) | ((uint8_t)R & 0x7F))
 #define TGQ_I_TYPED_GEN8(T, T2, I) ((uint8_t)I | (TGQ_R_GEN8(T, T2) << 8))
 #define TGQ_I_GEN8(I) ((uint8_t)I)
 

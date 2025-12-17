@@ -348,6 +348,22 @@ void emit_sync(EmitBuffer *buf) {
 }
 
 // ============================================================================
+// ATOMIC INSTRUCTIONS
+// ============================================================================
+
+void emit_atomic_add(EmitBuffer *buf, uint8_t type, uint8_t rd, uint8_t rbase, uint8_t roff) {
+    emit_scalar3(buf, TGQ_I_ATOMIC_ADD, type, rd, rbase, roff);
+}
+
+void emit_atomic_sub(EmitBuffer *buf, uint8_t type, uint8_t rd, uint8_t rbase, uint8_t roff) {
+    emit_scalar3(buf, TGQ_I_ATOMIC_SUB, type, rd, rbase, roff);
+}
+
+void emit_atomic_st(EmitBuffer *buf, uint8_t type, uint8_t rsrc, uint8_t rbase, uint8_t roff) {
+    emit_scalar3(buf, TGQ_I_ATOMIC_ST, type, rsrc, rbase, roff);
+}
+
+// ============================================================================
 // OUTPUT
 // ============================================================================
 

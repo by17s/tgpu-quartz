@@ -56,6 +56,7 @@ struct Symbol {
     int reg_index;           // Assigned register (-1 if in memory)
     RegisterClass reg_class; // Which register file
     int stack_offset;        // Offset in local memory
+    int stack_type;
 
     // For functions
     struct ASTNode *func_body;    // Function body AST (forward decl)

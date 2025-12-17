@@ -215,3 +215,4 @@ void list_free(list_t* list);
 //Code Gen
 
 int gen_init(int flags);
+int gen_by_ast(ASTNode *root);

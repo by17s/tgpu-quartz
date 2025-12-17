@@ -1,23 +1,11 @@
 // Main compute function
 void main(vec4 f) {
-    // Get current pixel coordinates
-    vec2 uv = gl_FragCoord.xy / vec2(float(uWidth), float(uHeight));
-    
-    // Animate
-    vec2 p = uv * 4.0;
-    p.x = p.x + uTime * 0.1;
-    
-    // Generate procedural texture
-    float n = fbm(p);
-    
-    // Color based on noise
-    vec3 color1 = vec3(0.1, 0.2, 0.5);
-    vec3 color2 = vec3(0.9, 0.6, 0.3);
-    vec3 finalColor = mix(color1, color2, n);
-    
-    // Add some variation
-    float bands = sin(n * 10.0 + uTime) * 0.5 + 0.5;
-    finalColor = finalColor * bands;
-    
-    gl_FragColor = vec4(finalColor, 1.0);
+    float uWidth = 1920.5;
+    float uHeight = 1080.0;
+    float uTime = 1.0;
+    int num = 2;
+    fp16 f = 0.5;
+    bf32 b32 = 1.0;
+
+    float uAspect = uWidth / uHeight * 1.0;
 }
